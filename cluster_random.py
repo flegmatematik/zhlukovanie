@@ -90,8 +90,8 @@ if vtk == "y" or vtk == "yes":
 
 # channel constants
 boxX = 100.0
-boxY = 100.0
-boxZ = 100.0
+boxY = 40.0
+boxZ = 40.0
 
 # system constants
 system = espressomd.System(box_l=[boxX, boxY, boxZ])
@@ -151,9 +151,9 @@ cell_positions = []
 
 gap_size = 0.5
 
-cluster_centerX = cell_radius * 8
+cluster_centerX = cell_radius * 5
 cluster_centerY = boxY/2.0
-cluster_centerZ = boxZ/2.0
+cluster_centerZ = boxZ/6.0
 
 
 x = cluster_centerX
@@ -165,17 +165,12 @@ print(y)
 print(z)
 
 for i in range(4):
-
-
     cell_positions.append([x,y,z])
 
-    newX = random.random() * 2 * (cell_radius + gap_size) - (cell_radius + gap_size)
-    newY = random.random() * 2 * (cell_radius + gap_size) - (cell_radius + gap_size)
-
-
+    newX = random.random() * 2 * (2 * cell_radius + gap_size) - (2 * cell_radius + gap_size)
+    newY = random.random() * 2 * (2 * cell_radius + gap_size) - (2 * cell_radius + gap_size)
 
     odmoc = sqrt(pow(newX,2) + pow(newY,2))
-
 
     newZ = sqrt(pow(cell_radius*2 + gap_size,2) - pow(odmoc,2));
 
@@ -279,7 +274,7 @@ for id, cell in enumerate(cells):
 print ("fluid and cells initialised")
 
 # main integration loop
-maxCycle = 200
+maxCycle = 100
 steps_in_one_cycle = 300
 print ("time: 0 ms")
 for cycle in range(1, maxCycle):
