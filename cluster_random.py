@@ -167,16 +167,18 @@ print(z)
 for i in range(4):
     cell_positions.append([x,y,z])
 
+
+    # generating 2 random coordinates x and y
+    # in range of < -(2*cell_radius + gap_size), (2*cell_radius + gap_size) >
     newX = random.random() * 2 * (2 * cell_radius + gap_size) - (2 * cell_radius + gap_size)
     newY = random.random() * 2 * (2 * cell_radius + gap_size) - (2 * cell_radius + gap_size)
 
-    odmoc = sqrt(pow(newX,2) + pow(newY,2))
+    # euclidean distance between x and y
+    xy_dist = sqrt(pow(newX,2) + pow(newY,2))
 
-    newZ = sqrt(pow(cell_radius*2 + gap_size,2) - pow(odmoc,2));
-
-    print(newX)
-    print(newY)
-    print(newZ)
+    # calculating last coordinate z to satisfy gap_size
+    # generating only POSITIVE NUMBER - to reduce chance of collision
+    newZ = sqrt(pow(cell_radius*2 + gap_size,2) - pow(xy_dist,2));
 
     x = x + newX
     y = y + newY
@@ -185,18 +187,6 @@ for i in range(4):
     print(x)
     print(y)
     print(z)
-
-"""
-cell_positions.append([cluster_centerX,
-                       cluster_centerY,
-                       cluster_centerZ])
-cell_positions.append([cluster_centerX,
-                       cluster_centerY,
-                       cluster_centerZ])
-cell_positions.append([cluster_centerX,
-                       cluster_centerY,
-                       cluster_centerZ])
-"""
 
 typeCell_soft = oif.OifCellType(nodes_file="input/sphere642nodes.dat",
                            triangles_file="input/sphere642triangles.dat",
