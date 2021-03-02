@@ -89,9 +89,9 @@ if vtk == "y" or vtk == "yes":
     os.makedirs(vtk_directory, exist_ok=True)
 
 # channel constants
-boxX = 100.0
-boxY = 40.0
-boxZ = 40.0
+boxX = 70.0
+boxY = 70.0
+boxZ = 70.0
 
 # system constants
 system = espressomd.System(box_l=[boxX, boxY, boxZ])
@@ -149,44 +149,53 @@ print("Boundaries created.")
 cell_radius = r_cell
 cell_positions = []
 
+signs = [-1,1]
+
 gap_size = 0.5
+cell_count = 10
+
 
 cluster_centerX = cell_radius * 5
 cluster_centerY = boxY/2.0
-cluster_centerZ = boxZ/6.0
+cluster_centerZ = boxZ/2.0
 
 
 x = cluster_centerX
 y = cluster_centerY
 z = cluster_centerZ
 
-print(x)
-print(y)
-print(z)
+for i in range(cell_count):
+    cell_positions.append([x, y, z])
 
-for i in range(4):
-    cell_positions.append([x,y,z])
+    allOk = False
+    while not allOk:
+        x,y,z = random.choice(cell_positions)
+
+        # generating 2 random coordinates x and y
+        # in range of < -(2*cell_radius + gap_size), (2*cell_radius + gap_size) >
+        newX = x + random.random() * (2 * (2 * cell_radius + gap_size)) - (2 * cell_radius + gap_size)
+        # y depends on x
+        maxY = sqrt(pow(2*cell_radius + gap_size,2) - pow(abs(newX - x),2))
+        newY = y + random.random() * 2 * maxY - maxY
 
 
-    # generating 2 random coordinates x and y
-    # in range of < -(2*cell_radius + gap_size), (2*cell_radius + gap_size) >
-    newX = random.random() * 2 * (2 * cell_radius + gap_size) - (2 * cell_radius + gap_size)
-    newY = random.random() * 2 * (2 * cell_radius + gap_size) - (2 * cell_radius + gap_size)
 
-    # euclidean distance between x and y
-    xy_dist = sqrt(pow(newX,2) + pow(newY,2))
+        # euclidean distance between centres on xy plane
+        xy_dist = sqrt(pow(newX-x,2) + pow(newY-y,2))
 
-    # calculating last coordinate z to satisfy gap_size
-    # generating only POSITIVE NUMBER - to reduce chance of collision
-    newZ = sqrt(pow(cell_radius*2 + gap_size,2) - pow(xy_dist,2));
+        # calculating last coordinate z to satisfy gap_size
+        newZ = z + random.choice(signs) * sqrt(pow(cell_radius*2 + gap_size,2) - pow(xy_dist,2));
 
-    x = x + newX
-    y = y + newY
-    z = z + newZ
+        x = newX
+        y = newY
+        z = newZ
 
-    print(x)
-    print(y)
-    print(z)
+        allOk = True
+        for cell_center in cell_positions:
+            if distance(cell_center,[x,y,z]) < 2 * cell_radius + gap_size:
+                allOk = False
+
+
 
 typeCell_soft = oif.OifCellType(nodes_file="input/sphere642nodes.dat",
                            triangles_file="input/sphere642triangles.dat",
@@ -202,7 +211,7 @@ typeCell_soft = oif.OifCellType(nodes_file="input/sphere642nodes.dat",
 
 # create cells
 cells = []
-for i in range(4):
+for i in range(cell_count):
     cells.append(oif.OifCell(cell_type=typeCell_soft,
                             particle_type=i,
                             origin=cell_positions[i],
@@ -219,14 +228,15 @@ for i in range(len(cells)):
 # attractive Morse, repulsive soft_sphere (membrane collision can be used here instead of soft-sphere):
 for i in range(len(cells)):
     for j in range(i+1, len(cells)):
-        system.non_bonded_inter[i,j].morse.set_params(eps=0.4,
-                                                    alpha=0.2,
+        system.non_bonded_inter[i,j].morse.set_params(eps=0.012,
+                                                    alpha=10,
                                                     cutoff=0.6,
-                                                    rmin=1.0)
-        system.non_bonded_inter[i,j].soft_sphere.set_params(a=0.002,
-                                                      n=1.5,
+                                                    rmin=0.45)
+        system.non_bonded_inter[i,j].soft_sphere.set_params(a=0.00022,
+                                                      n=2,
                                                       cutoff=0.4,
-                                                      offset=0.0)
+                                                      offset=0.3)
+
 
 # fluid
 fluid_viscosity = 1.5
